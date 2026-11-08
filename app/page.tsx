@@ -1,6 +1,8 @@
 import Link from "next/link";
 import CardArtwork from "@/components/CardArtwork";
+import JsonLd from "@/components/JsonLd";
 import { getCatalogEntries, getCatalogText } from "@/lib/catalog";
+import { siteUrl } from "@/lib/site";
 
 function getCardVariant(slug: string): "black-gold" | "white" {
   return /white/i.test(slug) ? "white" : "black-gold";
@@ -8,9 +10,26 @@ function getCardVariant(slug: string): "black-gold" | "white" {
 
 export default async function HomePage() {
   const products = (await getCatalogEntries()).filter((entry) => entry.type === "product");
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Custom NFC Business Card Collection",
+    description: "Explore Mistleblue's NFC business cards with QR codes and customizable designs.",
+    url: siteUrl,
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: products.map((product, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: product.title,
+        url: `${siteUrl}/catalog/${encodeURIComponent(product.slug)}`,
+      })),
+    },
+  };
 
   return (
     <main>
+      <JsonLd data={collectionSchema} />
       <section className="hero-section">
         <div className="hero-frame">
           <div className="hero-copy">
@@ -26,8 +45,8 @@ export default async function HomePage() {
               <span>that stays.</span>
             </h1>
             <p className="hero-description">
-              Your details, beautifully brought together. One tap turns a first hello into a
-              meaningful connection.
+              Custom NFC business cards with QR codes, bringing your details together for a more
+              memorable introduction.
             </p>
             <div className="hero-actions">
               <a className="button button-dark" href="#collection">
@@ -136,9 +155,38 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="details-section" id="how-it-works" aria-labelledby="details-title">
+        <div className="details-wrap">
+          <div className="details-heading">
+            <p className="eyebrow"><span className="eyebrow-number">02</span> A BETTER HANDOFF</p>
+            <h2 id="details-title">Your details,<br /><span>one tap away.</span></h2>
+          </div>
+          <div className="details-grid">
+            <article className="detail-step">
+              <span className="detail-step-number">01</span>
+              <h3>Tap to connect</h3>
+              <p>Share your digital profile with the built-in NFC chip on a compatible smartphone.</p>
+            </article>
+            <article className="detail-step">
+              <span className="detail-step-number">02</span>
+              <h3>Scan the QR code</h3>
+              <p>Give people another simple way to reach your details, right from your card.</p>
+            </article>
+            <article className="detail-step">
+              <span className="detail-step-number">03</span>
+              <h3>Make it yours</h3>
+              <p>Choose a finish and personalize your card with your name, logo, and QR code.</p>
+            </article>
+          </div>
+          <a className="details-contact" href="mailto:hello@mistleblue.com?subject=My%20Mistleblue%20card">
+            Find your card <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </section>
+
       <section className="manifesto">
         <div className="manifesto-inner">
-          <span className="manifesto-number">02 / THE MISTLEBLUE IDEA</span>
+          <span className="manifesto-number">03 / THE MISTLEBLUE IDEA</span>
           <p>
             Less paper in your pocket.
             <br />

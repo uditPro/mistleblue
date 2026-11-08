@@ -3,7 +3,9 @@ import sanitizeHtml from "sanitize-html";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import CardArtwork from "@/components/CardArtwork";
-import { getCatalogEntries, getCatalogProduct } from "@/lib/catalog";
+import JsonLd from "@/components/JsonLd";
+import { getCatalogEntries, getCatalogProduct, getCatalogText } from "@/lib/catalog";
+import { siteUrl } from "@/lib/site";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -18,9 +20,21 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const { slug } = await params;
   const product = await getCatalogProduct(slug);
 
-  return product
-    ? { title: product.title, description: `${product.title} — Mistleblue Premium Digital Business Card.` }
-    : { title: "Card not found" };
+  if (!product) return { title: "Card not found", robots: { index: false, follow: false } };
+
+  const productDescription = getCatalogText(product.content);
+  const description = productDescription
+    ? `${product.title}: ${productDescription}`.slice(0, 160)
+    : `${product.title}, a custom NFC business card with QR code by Mistleblue.`;
+  const url = `${siteUrl}/catalog/${encodeURIComponent(product.slug)}`;
+
+  return {
+    title: `${product.title} | Custom NFC Business Card`,
+    description,
+    alternates: { canonical: url },
+    openGraph: { type: "website", url, title: product.title, description, siteName: "Mistleblue" },
+    twitter: { card: "summary", title: product.title, description },
+  };
 }
 
 export default async function CatalogProductPage({ params }: ProductPageProps) {
@@ -29,6 +43,30 @@ export default async function CatalogProductPage({ params }: ProductPageProps) {
   if (!product) notFound();
 
   const isWhite = /white/i.test(product.slug);
+  const productDescription = getCatalogText(product.content);
+  const productUrl = `${siteUrl}/catalog/${encodeURIComponent(product.slug)}`;
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        name: product.title,
+        description: productDescription,
+        url: productUrl,
+        category: "NFC business cards",
+        material: "PVC",
+        brand: { "@type": "Brand", name: "Mistleblue" },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+          { "@type": "ListItem", position: 2, name: "Cards", item: `${siteUrl}/#collection` },
+          { "@type": "ListItem", position: 3, name: product.title, item: productUrl },
+        ],
+      },
+    ],
+  };
   const safeContent = sanitizeHtml(product.content, {
     allowedTags: [
       "address", "article", "b", "blockquote", "br", "caption", "code", "dd", "div",
@@ -47,6 +85,7 @@ export default async function CatalogProductPage({ params }: ProductPageProps) {
 
   return (
     <main className="detail-page">
+      <JsonLd data={productSchema} />
       <Link href="/#collection" className="detail-back">
         <span aria-hidden="true">←</span> &nbsp; Back to the collection
       </Link>

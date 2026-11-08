@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "migrate:wordpress": "node migration/parse.js"
+    "migrate:wordpress": "node migration/parse.js",
+    "migrate:customer-cards": "node --env-file=.env.local migration/import-customer-cards.mjs"
   },
   "dependencies": {
     "next": "^15.5.0",

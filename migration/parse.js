@@ -204,11 +204,13 @@ function parseValuesTuples(valuesSql) {
   return rows;
 }
 
-function parseInsert(statement) {
+function parseInsertLegacy(statement, tableName = "wppk_posts") {
   const cleanStatement = stripLeadingComments(statement);
-  const header = cleanStatement.match(
-    /^INSERT\s+(?:IGNORE\s+)?INTO\s+`?wppk_posts`?\s*/i,
-  );
+  const escapedTableName = tableName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const header = cleanStatement.match(new RegExp(
+    `^INSERT\\s+(?:IGNORE\\s+)?INTO\\s+?${escapedTableName}?\\s*`.replace(/\u007f/g, "`"),
+    "i",
+  ));
   if (!header) return null;
 
   const rest = cleanStatement.slice(header[0].length);
@@ -228,6 +230,121 @@ function parseInsert(statement) {
   }
 
   return { columns, rows: parseValuesTuples(rest.slice(valuesMatch.index + valuesMatch[0].length)) };
+}
+
+function parseInsert(statement, tableName = "wppk_posts") {
+  if (tableName.toLowerCase() === "wppk_posts") return parseInsertLegacy(statement);
+
+  const cleanStatement = stripLeadingComments(statement);
+  const header = cleanStatement.match(/^INSERT\s+(?:IGNORE\s+)?INTO\s+`?([a-z0-9_]+)`?\s*/i);
+  if (!header || header[1].toLowerCase() !== tableName.toLowerCase()) return null;
+
+  const rest = cleanStatement.slice(header[0].length);
+  const valuesMatch = /\bVALUES\b/i.exec(rest);
+  if (!valuesMatch) return null;
+
+  const columnText = rest.slice(0, valuesMatch.index).trim();
+  let columns = null;
+  if (columnText.startsWith("(")) {
+    const close = columnText.lastIndexOf(")");
+    if (close === -1) throw new Error(`Malformed ${tableName} INSERT column list.`);
+    columns = columnText
+      .slice(1, close)
+      .split(",")
+      .map((column) => column.trim().replace(/^`|`$/g, "").toLowerCase());
+  }
+
+  return { columns, rows: parseValuesTuples(rest.slice(valuesMatch.index + valuesMatch[0].length)) };
+}
+
+function getInsertField(row, columns, standardColumns, fieldName) {
+  const fieldIndex = (columns || standardColumns).indexOf(fieldName);
+  return fieldIndex < 0 ? undefined : row[fieldIndex];
+}
+
+function parseCustomerCards(sql) {
+  const userEmails = new Map();
+  const emailsByUserSlug = new Map();
+  const adminUserIds = new Set();
+  const cards = [];
+  const usersColumns = ["id", "user_login", "user_pass", "user_nicename", "user_email"];
+  const usermetaColumns = ["umeta_id", "user_id", "meta_key", "meta_value"];
+  const postsColumns = [
+    "id", "post_author", "post_date", "post_date_gmt", "post_content",
+    "post_title", "post_excerpt", "post_status", "comment_status",
+    "ping_status", "post_password", "post_name", "to_ping", "pinged",
+    "post_modified", "post_modified_gmt", "post_content_filtered",
+    "post_parent", "guid", "menu_order", "post_type", "post_mime_type",
+    "comment_count",
+  ];
+
+  for (const statement of splitSqlStatements(sql)) {
+    const userInsert = parseInsert(statement, "wppk_users");
+    if (userInsert) {
+      for (const row of userInsert.rows) {
+        const id = Number(getInsertField(row, userInsert.columns, usersColumns, "id"));
+        const email = cleanText(getInsertField(row, userInsert.columns, usersColumns, "user_email"))
+          .toLowerCase();
+        const login = cleanText(getInsertField(row, userInsert.columns, usersColumns, "user_login"));
+        const nicename = cleanText(getInsertField(row, userInsert.columns, usersColumns, "user_nicename"));
+        if (Number.isSafeInteger(id) && email) {
+          userEmails.set(id, email);
+          for (const userSlug of new Set([login, nicename].map(makeSlug).filter(Boolean))) {
+            const matchingEmails = emailsByUserSlug.get(userSlug) || new Set();
+            matchingEmails.add(email);
+            emailsByUserSlug.set(userSlug, matchingEmails);
+          }
+        }
+      }
+      continue;
+    }
+
+    const usermetaInsert = parseInsert(statement, "wppk_usermeta");
+    if (usermetaInsert) {
+      for (const row of usermetaInsert.rows) {
+        const userId = Number(getInsertField(row, usermetaInsert.columns, usermetaColumns, "user_id"));
+        const metaKey = cleanText(getInsertField(row, usermetaInsert.columns, usermetaColumns, "meta_key"));
+        const metaValue = cleanText(getInsertField(row, usermetaInsert.columns, usermetaColumns, "meta_value"));
+        if (/(?:^|_)capabilities$/i.test(metaKey) && metaValue.includes("administrator")) {
+          adminUserIds.add(userId);
+        }
+      }
+      continue;
+    }
+
+    const postInsert = parseInsert(statement, "wppk_posts");
+    if (!postInsert) continue;
+
+    for (const row of postInsert.rows) {
+      const getPostField = (fieldName) => getInsertField(row, postInsert.columns, postsColumns, fieldName);
+      const status = cleanText(getPostField("post_status")).toLowerCase();
+      const type = cleanText(getPostField("post_type")).toLowerCase();
+      const authorId = Number(getPostField("post_author"));
+      const password = cleanText(getPostField("post_password"));
+      if (status !== "publish" || type !== "page" || password) continue;
+
+      const title = cleanText(getPostField("post_title"));
+      const slug = cleanText(getPostField("post_name")) || makeSlug(title);
+      const id = Number(getPostField("id"));
+      if (!title || !slug || !Number.isSafeInteger(id)) continue;
+      const ownerEmail = userEmails.get(authorId)
+        || (emailsByUserSlug.get(makeSlug(slug))?.size === 1
+          ? [...emailsByUserSlug.get(makeSlug(slug))][0]
+          : undefined);
+      if (!ownerEmail || (adminUserIds.has(authorId) && !emailsByUserSlug.has(makeSlug(slug)))) continue;
+
+      cards.push({
+        wordpress_post_id: id,
+        owner_email: ownerEmail,
+        title,
+        slug,
+        content: cleanText(getPostField("post_content")),
+        created_at: cleanText(getPostField("post_date_gmt")) || cleanText(getPostField("post_date")),
+      });
+    }
+  }
+
+  return cards;
 }
 
 function cleanText(value) {
@@ -333,4 +450,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { parseDump };
+module.exports = { parseCustomerCards, parseDump };
