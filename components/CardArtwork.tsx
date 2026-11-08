@@ -2,14 +2,16 @@ interface CardArtworkProps {
   title: string;
   variant: "black-gold" | "white";
   className?: string;
+  ariaHidden?: boolean;
 }
 
-export default function CardArtwork({ title, variant, className = "" }: CardArtworkProps) {
+export default function CardArtwork({ title, variant, className = "", ariaHidden = false }: CardArtworkProps) {
   const isDark = variant === "black-gold";
 
   return (
     <div
       aria-label={`${title} digital business card design`}
+      aria-hidden={ariaHidden}
       className={`card-artwork ${isDark ? "card-artwork-dark" : "card-artwork-light"} ${className}`}
       role="img"
     >

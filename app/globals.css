@@ -872,6 +872,99 @@ body {
   line-height: 1;
 }
 
+.email-inquiry-section {
+  padding-block: 84px 88px;
+  background: #e6e9e4;
+}
+
+.email-inquiry-inner {
+  display: grid;
+  width: min(100% - 64px, 1190px);
+  margin-inline: auto;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: clamp(40px, 7vw, 92px);
+}
+
+.email-inquiry-copy h2 {
+  margin: 19px 0 0;
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: clamp(42px, 5vw, 61px);
+  font-weight: 400;
+  line-height: 1.04;
+}
+
+.email-inquiry-copy h2 span {
+  color: var(--blue);
+  font-style: italic;
+}
+
+.email-inquiry-content > p {
+  max-width: 470px;
+  margin: 0 0 23px;
+  color: #656761;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.email-inquiry-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: #303432;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.email-inquiry-control {
+  display: flex;
+  gap: 10px;
+}
+
+.email-inquiry-control input {
+  min-width: 0;
+  min-height: 49px;
+  flex: 1;
+  padding-inline: 13px;
+  border: 1px solid #d1d4ce;
+  border-radius: 0;
+  background: #fbfaf7;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+}
+
+.email-inquiry-button {
+  display: inline-flex;
+  min-height: 49px;
+  align-items: center;
+  justify-content: center;
+  gap: 17px;
+  padding-inline: 16px;
+  border: 0;
+  background: var(--ink);
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  transition: background 160ms ease;
+}
+
+.email-inquiry-button:hover {
+  background: var(--blue);
+}
+
+.email-inquiry-button:focus-visible {
+  outline: 2px solid #bd985b;
+  outline-offset: 3px;
+}
+
+.email-inquiry-note {
+  margin: 10px 0 0;
+  color: #777972;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
 .card-artwork {
   position: relative;
   display: flex;
@@ -1131,6 +1224,326 @@ body {
 .detail-art {
   padding: 10%;
   background: #e8e8e3;
+}
+
+.interactive-card-wrap {
+  width: 100%;
+}
+
+.interactive-card-scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.6;
+  perspective: 1300px;
+  perspective-origin: 50% 45%;
+}
+
+.interactive-card {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(var(--card-flip, 0deg)) rotateX(var(--card-tilt-x, 0deg)) rotateY(var(--card-tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 760ms cubic-bezier(0.2, 0.72, 0.25, 1);
+  will-change: transform;
+}
+
+.interactive-card.is-flipped {
+  --card-flip: 180deg;
+}
+
+.interactive-card-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid rgb(23 26 29 / 12%);
+  border-radius: 10px;
+  backface-visibility: hidden;
+  box-shadow: 0 25px 38px rgb(23 26 29 / 22%), inset 0 1px rgb(255 255 255 / 54%);
+}
+
+.interactive-card-front {
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
+.interactive-card-front::before,
+.interactive-card-back::before {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  background: linear-gradient(118deg, transparent 22%, rgb(255 255 255 / 13%) 45%, transparent 65%);
+  content: "";
+  opacity: 0.45;
+  pointer-events: none;
+  transform: translateX(-28%);
+  transition: transform 900ms ease, opacity 500ms ease;
+}
+
+.interactive-card-wrap:hover .interactive-card-front::before,
+.interactive-card-wrap:hover .interactive-card-back::before {
+  opacity: 0.75;
+  transform: translateX(28%);
+}
+
+.interactive-card-back {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(16px, 3vw, 29px);
+  transform: rotateY(180deg);
+}
+
+.card-back-dark {
+  background:
+    radial-gradient(ellipse at 86% 9%, rgb(201 168 104 / 13%), transparent 34%),
+    linear-gradient(145deg, #202528 0%, #111619 70%, #0b0e10 100%);
+  color: #f5f2e9;
+}
+
+.card-back-light {
+  background:
+    radial-gradient(ellipse at 85% 8%, rgb(34 59 104 / 9%), transparent 35%),
+    linear-gradient(145deg, #fcfcf8 0%, #ebedea 100%);
+  color: #252b2f;
+}
+
+.card-back-top,
+.card-back-top > span:last-child,
+.card-back-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-back-top {
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgb(245 242 233 / 20%);
+}
+
+.card-back-light .card-back-top {
+  border-color: rgb(37 43 47 / 19%);
+}
+
+.card-back-mark {
+  color: var(--gold);
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: clamp(23px, 3.2vw, 34px);
+  font-style: italic;
+  line-height: 1;
+}
+
+.card-back-light .card-back-mark {
+  color: var(--blue);
+}
+
+.card-back-top > span:last-child {
+  gap: 8px;
+  color: rgb(245 242 233 / 65%);
+  font-size: clamp(6px, 0.75vw, 8px);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.card-back-light .card-back-top > span:last-child {
+  color: rgb(37 43 47 / 65%);
+}
+
+.card-back-top i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+.card-back-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-left: 2px;
+}
+
+.card-back-identity > span:first-child,
+.card-back-identity > span:last-child,
+.card-back-connect > span {
+  color: rgb(245 242 233 / 58%);
+  font-size: clamp(6px, 0.72vw, 8px);
+  font-weight: 550;
+  letter-spacing: 0.15em;
+}
+
+.card-back-light .card-back-identity > span:first-child,
+.card-back-light .card-back-identity > span:last-child,
+.card-back-light .card-back-connect > span {
+  color: rgb(37 43 47 / 59%);
+}
+
+.card-back-identity strong {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: clamp(21px, 3vw, 34px);
+  font-weight: 400;
+}
+
+.card-back-rule {
+  width: 35px;
+  height: 1px;
+  margin-block: 1px;
+  background: var(--gold);
+}
+
+.card-back-light .card-back-rule {
+  background: #657b9f;
+}
+
+.card-back-bottom {
+  padding-top: 12px;
+  border-top: 1px solid rgb(245 242 233 / 20%);
+}
+
+.card-back-light .card-back-bottom {
+  border-color: rgb(37 43 47 / 19%);
+}
+
+.card-back-scan {
+  position: relative;
+  display: grid;
+  width: clamp(46px, 7vw, 68px);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgb(245 242 233 / 52%);
+  color: var(--gold);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.card-back-light .card-back-scan {
+  border-color: rgb(37 43 47 / 45%);
+  color: var(--blue);
+}
+
+.card-back-scan span {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 1px solid currentColor;
+}
+
+.card-back-scan span:nth-child(1) { top: 5px; left: 5px; }
+.card-back-scan span:nth-child(2) { top: 5px; right: 5px; }
+.card-back-scan span:nth-child(3) { bottom: 5px; left: 5px; }
+
+.card-back-connect {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  text-align: right;
+}
+
+.card-back-connect strong {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: clamp(15px, 2.2vw, 23px);
+  font-weight: 400;
+  line-height: 1.12;
+}
+
+.card-view-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.card-view-label {
+  color: #777972;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.card-flip-button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  border: 1px solid #c9cac4;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+
+.card-flip-button:hover {
+  border-color: var(--blue);
+  background: rgb(255 255 255 / 48%);
+}
+
+.card-flip-button:focus-visible {
+  outline: 2px solid #bd985b;
+  outline-offset: 3px;
+}
+
+.card-flip-button > span:first-child {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.card-personalizer {
+  margin-top: 25px;
+  padding-top: 18px;
+  border-top: 1px solid #d6d7d1;
+}
+
+.card-personalizer-heading {
+  margin: 0 0 14px;
+  color: var(--blue);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.13em;
+}
+
+.card-personalizer label {
+  display: block;
+  margin-bottom: 12px;
+  color: #555953;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.card-personalizer-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.card-personalizer input {
+  display: block;
+  width: 100%;
+  min-height: 40px;
+  margin-top: 6px;
+  padding-inline: 10px;
+  border: 1px solid #d6d7d1;
+  border-radius: 0;
+  background: #fbfaf7;
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.card-personalizer input:focus-visible,
+.email-inquiry-control input:focus-visible {
+  outline: 2px solid #bd985b;
+  outline-offset: 2px;
+}
+
+.card-personalizer-note {
+  margin: 0;
+  color: #777972;
+  font-size: 9px;
+  line-height: 1.6;
 }
 
 .detail-art-caption {
@@ -1474,6 +1887,12 @@ body {
     row-gap: 28px;
   }
 
+  .email-inquiry-inner {
+    width: min(100% - 48px, 680px);
+    grid-template-columns: 1fr;
+    gap: 27px;
+  }
+
   .detail-layout {
     grid-template-columns: 1fr;
     gap: 40px;
@@ -1710,6 +2129,38 @@ body {
     width: calc(100% - 36px);
   }
 
+  .card-personalizer-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .email-inquiry-section {
+    padding-block: 62px 68px;
+  }
+
+  .email-inquiry-inner {
+    width: calc(100% - 36px);
+    gap: 22px;
+  }
+
+  .email-inquiry-copy h2 {
+    margin-top: 15px;
+    font-size: 45px;
+  }
+
+  .email-inquiry-content > p {
+    font-size: 12px;
+  }
+
+  .email-inquiry-control {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .email-inquiry-button {
+    justify-content: space-between;
+  }
+
   .details-heading h2 {
     margin-top: 15px;
     font-size: 45px;
@@ -1796,6 +2247,34 @@ body {
   .not-found-page {
     width: calc(100% - 36px);
     min-height: 60vh;
+  }
+
+  .interactive-card-back {
+    padding: 12px;
+  }
+
+  .card-back-top {
+    padding-bottom: 8px;
+  }
+
+  .card-back-identity {
+    gap: 5px;
+  }
+
+  .card-back-identity strong {
+    font-size: 18px;
+  }
+
+  .card-back-bottom {
+    padding-top: 8px;
+  }
+
+  .card-back-scan {
+    width: 38px;
+  }
+
+  .card-back-connect {
+    gap: 4px;
   }
 
   .detail-art {

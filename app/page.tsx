@@ -1,5 +1,6 @@
 import Link from "next/link";
 import CardArtwork from "@/components/CardArtwork";
+import EmailInquiryForm from "@/components/EmailInquiryForm";
 import JsonLd from "@/components/JsonLd";
 import { getCatalogEntries, getCatalogText } from "@/lib/catalog";
 import { siteUrl } from "@/lib/site";
@@ -193,6 +194,19 @@ export default async function HomePage() {
             <span>More of you in the room.</span>
           </p>
           <span className="manifesto-mark" aria-hidden="true">m.</span>
+        </div>
+      </section>
+
+      <section className="email-inquiry-section" aria-labelledby="email-inquiry-title">
+        <div className="email-inquiry-inner">
+          <div className="email-inquiry-copy">
+            <p className="eyebrow"><span className="eyebrow-number">04</span> A MORE MEMORABLE HELLO</p>
+            <h2 id="email-inquiry-title">Let&apos;s make<br /><span>it personal.</span></h2>
+          </div>
+          <div className="email-inquiry-content">
+            <p>Tell us where to reach you and we&apos;ll open a note to our team. Ask a question or start planning your card.</p>
+            <EmailInquiryForm />
+          </div>
         </div>
       </section>
     </main>

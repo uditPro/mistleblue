@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import sanitizeHtml from "sanitize-html";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import CardArtwork from "@/components/CardArtwork";
 import JsonLd from "@/components/JsonLd";
+import InteractiveCard from "@/components/InteractiveCard";
 import { getCatalogEntries, getCatalogProduct, getCatalogText } from "@/lib/catalog";
 import { siteUrl } from "@/lib/site";
 
@@ -91,7 +91,7 @@ export default async function CatalogProductPage({ params }: ProductPageProps) {
       </Link>
       <div className="detail-layout">
         <div className="detail-art">
-          <CardArtwork title={product.title} variant={isWhite ? "white" : "black-gold"} />
+          <InteractiveCard title={product.title} variant={isWhite ? "white" : "black-gold"} />
           <p className="detail-art-caption">MISTLEBLUE® &nbsp; / &nbsp; THE EVERYDAY OBJECT, RECONSIDERED</p>
         </div>
         <div className="detail-copy">
